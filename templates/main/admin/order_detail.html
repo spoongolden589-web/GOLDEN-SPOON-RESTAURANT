@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Details - Admin - Restaurant{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <div class="container">
+            <h1>Order #{{ order.order_number }}</h1>
+            <a href="{% url 'main:admin_orders' %}" class="btn btn-outline">← Back to Orders</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="admin-detail-grid">
+            <div class="card">
+                <h3>Order Information</h3>
+                <div class="detail-group">
+                    <div class="detail-row">
+                        <span>Order Number:</span>
+                        <strong>{{ order.order_number }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Customer:</span>
+                        <span>{{ order.user.username }} ({{ order.user.email }})</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Order Type:</span>
+                        <strong>{{ order.get_order_type_display }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Status:</span>
+                        <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Date:</span>
+                        <span>{{ order.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Last Updated:</span>
+                        <span>{{ order.updated_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+                
+                {% if order.order_type == 'delivery' %}
+                <div class="detail-group">
+                    <h4>Delivery Details</h4>
+                    <div class="detail-row">
+                        <span>Address:</span>
+                        <span>{{ order.delivery_address }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span>Delivery Fee:</span>
+                        <span>£{{ order.delivery_fee }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if order.order_type == 'collection' and order.collection_time %}
+                <div class="detail-group">
+                    <h4>Collection Details</h4>
+                    <div class="detail-row">
+                        <span>Collection Time:</span>
+                        <span>{{ order.collection_time|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <div class="card">
+                    <h3>Order Items</h3>
+                    <div class="order-items-list">
+                        {% for item in order.items.all %}
+                        <div class="order-item-detail">
+                            <span>{{ item.quantity }}x {{ item.menu_item.name }}</span>
+                            <span>£{{ item.get_total }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="order-totals">
+                        <div class="detail-row">
+                            <span>Subtotal:</span>
+                            <span>£{{ order.subtotal }}</span>
+                        </div>
+                        {% if order.delivery_fee > 0 %}
+                        <div class="detail-row">
+                            <span>Delivery Fee:</span>
+                            <span>£{{ order.delivery_fee }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="detail-row total-row">
+                            <span><strong>Total:</strong></span>
+                            <span><strong>£{{ order.total }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Update Status</h3>
+                    <form method="post" action="{% url 'main:admin_update_order_status' order.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="status">Select New Status</label>
+                            <select name="status" id="status" class="form-select">
+                                {% for status_value, status_label in status_choices %}
+                                    <option value="{{ status_value }}" {% if order.status == status_value %}selected{% endif %}>
+                                        {{ status_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Update Status</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Locations - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-locations-section">
+        <div class="premium-container">
+            <!-- Hero Title -->
+            <div class="premium-locations-hero">
+                <h1 class="premium-title fade-in">Our Location</h1>
+                <div class="premium-divider"></div>
+            </div>
+
+            <!-- Location Grid -->
+            <div class="premium-locations-grid slide-up">
+                <!-- Details Card -->
+                <div class="premium-location-card">
+                    <h2 class="premium-card-title">Visit Us</h2>
+                    
+                    <div class="premium-info-group">
+                        <h3 class="premium-info-label">Address</h3>
+                        <p class="premium-info-text">123 Food Street</p>
+                        <p class="premium-info-text">London, United Kingdom</p>
+                        <p class="premium-info-text">SW1A 1AA</p>
+                    </div>
+
+                    <div class="premium-info-group">
+                        <h3 class="premium-info-label">Contact</h3>
+                        <p class="premium-info-text">+44 123 456 7890</p>
+                        <p class="premium-info-text">info@restaurant.com</p>
+                    </div>
+
+                    <div class="premium-info-group">
+                        <h3 class="premium-info-label">Hours of Service</h3>
+                        <div class="premium-hours-table">
+                            <div class="hours-row">
+                                <span class="hours-day">Monday – Friday</span>
+                                <span class="hours-time">11:00 AM – 11:00 PM</span>
+                            </div>
+                            <div class="hours-row">
+                                <span class="hours-day">Saturday – Sunday</span>
+                                <span class="hours-time">10:00 AM – 12:00 AM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Container -->
+                <div class="premium-map-container">
+                    <div class="premium-map-frame">
+                        <div class="map-pin-marker">
+                            <div class="pin-outer"></div>
+                            <div class="pin-inner"></div>
+                        </div>
+                        <div class="map-coordinates">
+                            <p>51.5074° N, 0.1278° W</p>
+                        </div>
+                        <div class="map-overlay-text">
+                            <p class="map-location-name">London</p>
+                            <p class="map-location-detail">123 Food Street</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Information -->
+            <div class="premium-delivery-section slide-up">
+                <h2 class="premium-heading">Private Service</h2>
+                <p class="premium-text">We extend our culinary excellence to your residence within a 5-mile radius.</p>
+                <p class="premium-text-small">Service Fee: £5.00 | Estimated Arrival: 30-45 minutes</p>
+                <a href="{% url 'main:menu' %}" class="premium-btn">Explore Menu</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

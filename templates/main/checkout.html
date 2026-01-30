@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-checkout-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Hero Title -->
+            <div class="premium-checkout-hero">
+                <h1 class="premium-title fade-in">Checkout</h1>
+                <div class="premium-divider"></div>
+                <p class="premium-subtitle">Complete Your Order</p>
+            </div>
+
+            <form method="post" action="{% url 'main:process_payment' %}" id="checkoutForm" class="premium-checkout-form">
+                {% csrf_token %}
+                
+                <div class="premium-checkout-grid">
+                    <div class="premium-checkout-main">
+                        <!-- Guest Information (if not logged in) -->
+                        {% if not user.is_authenticated %}
+                        <div class="premium-checkout-card">
+                            <h3 class="premium-card-title">Contact Information</h3>
+                            <p class="premium-card-subtitle">We need your details to confirm your order</p>
+                            
+                            <div class="premium-form-group">
+                                <label for="guest_name" class="premium-label">Full Name</label>
+                                <input type="text" id="guest_name" name="guest_name" class="premium-input" required>
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="guest_email" class="premium-label">Email Address</label>
+                                <input type="email" id="guest_email" name="guest_email" class="premium-input" required>
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="guest_phone" class="premium-label">Phone Number</label>
+                                <input type="tel" id="guest_phone" name="guest_phone" class="premium-input" required>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Order Type Selection -->
+                        <div class="premium-checkout-card">
+                            <h3 class="premium-card-title">Order Type</h3>
+                            <div class="premium-radio-group">
+                                <label class="premium-radio-label">
+                                    <input type="radio" name="order_type" value="delivery" checked onchange="toggleOrderType()">
+                                    <span class="premium-radio-text">
+                                        <span class="radio-title">Delivery</span>
+                                        <span class="radio-price">£5.00</span>
+                                    </span>
+                                </label>
+                                <label class="premium-radio-label">
+                                    <input type="radio" name="order_type" value="collection" onchange="toggleOrderType()">
+                                    <span class="premium-radio-text">
+                                        <span class="radio-title">Collection</span>
+                                        <span class="radio-price">Free</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Delivery Address -->
+                        <div class="premium-checkout-card" id="deliverySection">
+                            <h3 class="premium-card-title">Delivery Address</h3>
+                            <div class="premium-form-group">
+                                <label for="delivery_address" class="premium-label">Full Address</label>
+                                <textarea id="delivery_address" name="delivery_address" rows="4" class="premium-textarea" required></textarea>
+                            </div>
+                        </div>
+                        
+                        <!-- Collection Time -->
+                        <div class="premium-checkout-card" id="collectionSection" style="display: none;">
+                            <h3 class="premium-card-title">Collection Time</h3>
+                            <div class="premium-form-group">
+                                <label for="collection_time" class="premium-label">Preferred Collection Time</label>
+                                <input type="datetime-local" id="collection_time" name="collection_time" class="premium-input">
+                            </div>
+                        </div>
+                        
+                        <!-- Payment -->
+                        <div class="premium-checkout-card">
+                            <h3 class="premium-card-title">Payment Information</h3>
+                            <div class="premium-test-mode">
+                                <span class="lock-icon">🔒</span>
+                                <span>Test Mode - Use card number: 4242 4242 4242 4242</span>
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="card_number" class="premium-label">Card Number</label>
+                                <input type="text" id="card_number" class="premium-input" placeholder="4242 4242 4242 4242" maxlength="19">
+                            </div>
+                            
+                            <div class="premium-form-row">
+                                <div class="premium-form-group">
+                                    <label for="expiry" class="premium-label">Expiry Date</label>
+                                    <input type="text" id="expiry" class="premium-input" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="premium-form-group">
+                                    <label for="cvv" class="premium-label">CVV</label>
+                                    <input type="text" id="cvv" class="premium-input" placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="payment_token" value="TEST_PAYMENT_TOKEN">
+                        </div>
+                    </div>
+                    
+                    <div class="premium-checkout-sidebar">
+                        <div class="premium-summary-card">
+                            <h3 class="premium-card-title">Order Summary</h3>
+                            
+                            <div class="premium-order-items">
+                                {% for item in basket_items %}
+                                <div class="premium-order-item">
+                                    <span class="item-details">
+                                        <span class="item-quantity">{{ item.quantity }}×</span>
+                                        <span class="item-name">{{ item.item.name }}</span>
+                                    </span>
+                                    <span class="item-price">£{{ item.subtotal }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="premium-summary-divider"></div>
+                            
+                            <div class="premium-summary-row">
+                                <span>Subtotal</span>
+                                <span>£{{ subtotal }}</span>
+                            </div>
+                            <div class="premium-summary-row" id="deliveryFeeRow">
+                                <span>Delivery Fee</span>
+                                <span id="deliveryFeeAmount">£{{ delivery_fee }}</span>
+                            </div>
+                            <div class="premium-summary-total">
+                                <span>Total</span>
+                                <span id="totalAmount">£{{ total }}</span>
+                            </div>
+                            
+                            <button type="submit" class="premium-checkout-btn">Place Order</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<script>
+function toggleOrderType() {
+    const deliveryRadio = document.querySelector('input[value="delivery"]');
+    const deliverySection = document.getElementById('deliverySection');
+    const collectionSection = document.getElementById('collectionSection');
+    const deliveryFeeRow = document.getElementById('deliveryFeeRow');
+    const deliveryFeeAmount = document.getElementById('deliveryFeeAmount');
+    const totalAmount = document.getElementById('totalAmount');
+    
+    const subtotal = {{ subtotal }};
+    const deliveryFee = {{ delivery_fee }};
+    
+    if (deliveryRadio.checked) {
+        deliverySection.style.display = 'block';
+        collectionSection.style.display = 'none';
+        deliveryFeeRow.style.display = 'flex';
+        deliveryFeeAmount.textContent = '£' + deliveryFee.toFixed(2);
+        totalAmount.textContent = '£' + (subtotal + deliveryFee).toFixed(2);
+        document.getElementById('delivery_address').required = true;
+    } else {
+        deliverySection.style.display = 'none';
+        collectionSection.style.display = 'block';
+        deliveryFeeRow.style.display = 'none';
+        totalAmount.textContent = '£' + subtotal.toFixed(2);
+        document.getElementById('delivery_address').required = false;
+    }
+}
+</script>
+{% endblock %}

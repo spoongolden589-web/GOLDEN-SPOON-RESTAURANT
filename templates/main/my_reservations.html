@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}My Reservations - Restaurant{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>My Reservations</h1>
+    </div>
+</div>
+
+<section class="reservations-list-section">
+    <div class="container">
+        {% if reservations %}
+        <div class="reservations-list">
+            {% for reservation in reservations %}
+            <div class="reservation-card">
+                <div class="reservation-card-header">
+                    <h3>Reservation #{{ reservation.reservation_number }}</h3>
+                    <span class="badge badge-{{ reservation.status }}">{{ reservation.get_status_display }}</span>
+                </div>
+                
+                <div class="reservation-card-body">
+                    <div class="reservation-detail">
+                        <strong>📅 Date:</strong>
+                        <span>{{ reservation.date|date:"l, d F Y" }}</span>
+                    </div>
+                    <div class="reservation-detail">
+                        <strong>🕐 Time:</strong>
+                        <span>{{ reservation.time|time:"H:i" }}</span>
+                    </div>
+                    <div class="reservation-detail">
+                        <strong>👥 Guests:</strong>
+                        <span>{{ reservation.guests }} {{ reservation.guests|pluralize:"person,people" }}</span>
+                    </div>
+                    {% if reservation.special_requests %}
+                    <div class="reservation-detail">
+                        <strong>📝 Special Requests:</strong>
+                        <span>{{ reservation.special_requests }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="reservation-detail">
+                        <strong>Created:</strong>
+                        <span>{{ reservation.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h2>No reservations yet</h2>
+            <p>Reserve a table to enjoy our delicious food!</p>
+            <a href="{% url 'main:make_reservation' %}" class="btn btn-primary">Make a Reservation</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

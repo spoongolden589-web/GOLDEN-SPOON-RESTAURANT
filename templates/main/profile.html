@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - Restaurant{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>My Profile</h1>
+    </div>
+</div>
+
+<section class="profile-section">
+    <div class="container">
+        <div class="profile-grid">
+            <div class="profile-info">
+                <div class="card">
+                    <h3>Account Information</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" value="{{ user.username }}" disabled>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" value="{{ user.email }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" value="{{ profile.phone }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea id="address" name="address" rows="3">{{ profile.address }}</textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="profile-orders">
+                <div class="card">
+                    <h3>Recent Orders</h3>
+                    {% if recent_orders %}
+                        <div class="orders-list">
+                            {% for order in recent_orders %}
+                            <div class="order-item">
+                                <div class="order-header">
+                                    <strong>Order #{{ order.order_number }}</strong>
+                                    <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+                                </div>
+                                <p>£{{ order.total }} - {{ order.created_at|date:"d M Y" }}</p>
+                                <a href="{% url 'main:order_confirmation' order.order_number %}" class="btn btn-sm btn-outline">View Details</a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No orders yet.</p>
+                        <a href="{% url 'main:menu' %}" class="btn btn-primary">Start Ordering</a>
+                    {% endif %}
+                </div>
+                
+                <div class="card">
+                    <h3>Quick Links</h3>
+                    <div class="quick-links">
+                        <a href="{% url 'main:basket' %}" class="btn btn-outline">View Basket</a>
+                        <a href="{% url 'main:my_reservations' %}" class="btn btn-outline">My Reservations</a>
+                        <a href="{% url 'main:menu' %}" class="btn btn-primary">Browse Menu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

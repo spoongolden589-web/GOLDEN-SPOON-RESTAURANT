@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ item.name }} - Menu - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-detail-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Back Navigation -->
+            <div class="premium-back-nav">
+                <a href="{% url 'main:menu' %}" class="premium-back-link">
+                    <svg class="back-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    <span>Back to Menu</span>
+                </a>
+            </div>
+
+            <!-- Detail Grid -->
+            <div class="premium-detail-grid">
+                <!-- Image Section -->
+                <div class="premium-detail-image-wrapper">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="premium-detail-image">
+                    {% else %}
+                        <div class="premium-detail-placeholder">
+                            <div class="placeholder-icon-large"></div>
+                        </div>
+                    {% endif %}
+                    <div class="premium-detail-category-badge">
+                        {{ item.get_category_display }}
+                    </div>
+                </div>
+
+                <!-- Info Section -->
+                <div class="premium-detail-content">
+                    <!-- Title & Price -->
+                    <div class="premium-detail-header">
+                        <h1 class="premium-detail-title">{{ item.name }}</h1>
+                        <div class="premium-title-divider"></div>
+                        <p class="premium-detail-price">£{{ item.price }}</p>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="premium-detail-block">
+                        <h3 class="premium-detail-subtitle">Description</h3>
+                        <p class="premium-detail-text">{{ item.description }}</p>
+                    </div>
+
+                    <!-- Ingredients -->
+                    <div class="premium-detail-block">
+                        <h3 class="premium-detail-subtitle">Ingredients</h3>
+                        <p class="premium-detail-text">{{ item.ingredients }}</p>
+                    </div>
+
+                    <!-- Allergens -->
+                    {% if item.allergens %}
+                    <div class="premium-detail-block premium-allergen-block">
+                        <h3 class="premium-detail-subtitle">Allergen Information</h3>
+                        <p class="premium-detail-text">{{ item.allergens }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Add to Basket Form -->
+                    <form action="{% url 'main:add_to_basket' item.id %}" method="post" class="premium-basket-form">
+                        {% csrf_token %}
+                        <div class="premium-quantity-wrapper">
+                            <label for="quantity" class="premium-quantity-label">Quantity</label>
+                            <input type="number" name="quantity" id="quantity" value="1" min="1" max="10" class="premium-quantity-input">
+                        </div>
+                        <button type="submit" class="premium-basket-submit">
+                            Add to Basket
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

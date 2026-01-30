@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmation - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-confirmation-section">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="premium-confirmation-card">
+                <!-- Success Icon -->
+                <div class="premium-success-icon">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                
+                <!-- Title -->
+                <h1 class="premium-confirmation-title">Order Confirmed</h1>
+                <div class="premium-confirmation-divider"></div>
+                <p class="premium-confirmation-message">Thank you for your order. We've received it and will process it shortly.</p>
+                
+                <!-- Order Details -->
+                <div class="premium-details-section">
+                    <h3 class="premium-section-title">Order Details</h3>
+                    
+                    <div class="premium-detail-grid">
+                        <div class="premium-detail-item">
+                            <span class="detail-label">Order Number</span>
+                            <span class="detail-value">{{ order.order_number }}</span>
+                        </div>
+                        <div class="premium-detail-item">
+                            <span class="detail-label">Order Type</span>
+                            <span class="detail-value">{{ order.get_order_type_display }}</span>
+                        </div>
+                        <div class="premium-detail-item">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-badge">{{ order.get_status_display }}</span>
+                        </div>
+                        <div class="premium-detail-item">
+                            <span class="detail-label">Total Amount</span>
+                            <span class="detail-value-highlight">£{{ order.total }}</span>
+                        </div>
+                        <div class="premium-detail-item">
+                            <span class="detail-label">Date</span>
+                            <span class="detail-value">{{ order.created_at|date:"d M Y, H:i" }}</span>
+                        </div>
+                        
+                        {% if order.order_type == 'delivery' %}
+                        <div class="premium-detail-item full-width">
+                            <span class="detail-label">Delivery Address</span>
+                            <span class="detail-value">{{ order.delivery_address }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if order.order_type == 'collection' and order.collection_time %}
+                        <div class="premium-detail-item">
+                            <span class="detail-label">Collection Time</span>
+                            <span class="detail-value">{{ order.collection_time|date:"d M Y, H:i" }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Order Items -->
+                <div class="premium-items-section">
+                    <h3 class="premium-section-title">Items Ordered</h3>
+                    
+                    <div class="premium-items-list">
+                        {% for item in order.items.all %}
+                        <div class="premium-item-row">
+                            <span class="item-info">
+                                <span class="item-qty">{{ item.quantity }}×</span>
+                                <span class="item-name">{{ item.menu_item.name }}</span>
+                            </span>
+                            <span class="item-total">£{{ item.get_total }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="premium-confirmation-actions">
+                    <a href="{% url 'main:home' %}" class="premium-action-btn primary">Back to Home</a>
+                    <a href="{% url 'main:profile' %}" class="premium-action-btn secondary">View My Orders</a>
+                </div>
+                
+                <!-- Email Notice -->
+                <p class="premium-email-notice">A confirmation email has been sent to {{ order.user.email }}</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
