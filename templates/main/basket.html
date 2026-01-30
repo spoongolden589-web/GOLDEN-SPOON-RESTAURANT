@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Basket - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-basket-section">
+        <div class="premium-container">
+            <!-- Hero Title -->
+            <div class="premium-basket-hero">
+                <h1 class="premium-title fade-in">Your Selection</h1>
+                <div class="premium-divider"></div>
+            </div>
+
+            {% if basket_items %}
+            <div class="premium-basket-grid slide-up" id="basket-content">
+                <!-- Basket Items -->
+                <div class="premium-basket-items" id="basket-items">
+                    {% for item in basket_items %}
+                    <div class="premium-basket-card" data-item-id="{{ item.item.id }}">
+                        <div class="basket-card-content">
+                            <div class="basket-item-details">
+                                <h3 class="basket-item-name">{{ item.item.name }}</h3>
+                                <p class="basket-item-price">£{{ item.item.price }}</p>
+                            </div>
+                            
+                            <div class="basket-item-actions">
+                                <form method="post" action="{% url 'main:update_basket' item.item.id %}" class="basket-quantity-form" data-item-id="{{ item.item.id }}" data-price="{{ item.item.price }}">
+                                    {% csrf_token %}
+                                    <div class="quantity-control">
+                                        <label class="quantity-label">Quantity</label>
+                                        <div class="quantity-input-group">
+                                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="10" class="premium-quantity-input">
+                                            <button type="submit" class="premium-update-btn">Update</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <div class="basket-item-subtotal">
+                                    <span class="subtotal-label">Subtotal</span>
+                                    <span class="subtotal-amount" data-subtotal="{{ item.item.id }}">£{{ item.subtotal }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="basket-card-footer">
+                            <a href="{% url 'main:remove_from_basket' item.item.id %}" class="premium-remove-btn" data-item-id="{{ item.item.id }}">Remove Item</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Order Summary -->
+                <div class="premium-basket-summary">
+                    <div class="premium-summary-card">
+                        <h3 class="premium-card-title">Order Summary</h3>
+                        
+                        <div class="premium-summary-content">
+                            <div class="summary-line">
+                                <span class="summary-label">Subtotal</span>
+                                <span class="summary-value" id="summary-subtotal">£{{ total }}</span>
+                            </div>
+                            
+                            <div class="premium-summary-divider"></div>
+                            
+                            <div class="summary-line summary-total">
+                                <span class="summary-label-total">Total</span>
+                                <span class="summary-value-total" id="summary-total">£{{ total }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="premium-summary-actions">
+                            <a href="{% url 'main:checkout' %}" class="premium-checkout-btn">Proceed to Checkout</a>
+                            <a href="{% url 'main:menu' %}" class="premium-continue-btn">Continue Browsing</a>
+                        </div>
+                    </div>
+                    
+                    <div class="premium-info-note">
+                        <p class="note-text">All items are prepared fresh to order using premium ingredients</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="premium-empty-state slide-up">
+                <div class="empty-state-content">
+                    <h2 class="empty-state-title">Your Basket Awaits</h2>
+                    <p class="empty-state-text">Begin your culinary journey by selecting from our exquisite menu</p>
+                    <div class="empty-state-divider"></div>
+                    <a href="{% url 'main:menu' %}" class="premium-browse-btn">Explore Menu</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Handle quantity update forms
+    document.querySelectorAll('.basket-quantity-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const url = this.action;
+            const itemId = this.dataset.itemId;
+            const price = parseFloat(this.dataset.price);
+            const quantity = parseInt(formData.get('quantity'));
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update subtotal for this item
+                    const subtotalElement = document.querySelector(`[data-subtotal="${itemId}"]`);
+                    if (subtotalElement) {
+                        subtotalElement.textContent = `£${data.subtotal.toFixed(2)}`;
+                    }
+                    
+                    // Update total
+                    document.getElementById('summary-subtotal').textContent = `£${data.total.toFixed(2)}`;
+                    document.getElementById('summary-total').textContent = `£${data.total.toFixed(2)}`;
+                    
+                    // Show success animation
+                    const card = this.closest('.premium-basket-card');
+                    card.style.animation = 'successPulse 0.4s ease';
+                    setTimeout(() => {
+                        card.style.animation = '';
+                    }, 400);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Handle remove buttons
+    document.querySelectorAll('.premium-remove-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const url = this.href;
+            const itemId = this.dataset.itemId;
+            const card = this.closest('.premium-basket-card');
+            
+            // Fade out animation
+            card.style.transition = 'all 0.4s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateX(-20px)';
+            
+            setTimeout(() => {
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Remove the card
+                        card.remove();
+                        
+                        // Update total
+                        document.getElementById('summary-subtotal').textContent = `£${data.total.toFixed(2)}`;
+                        document.getElementById('summary-total').textContent = `£${data.total.toFixed(2)}`;
+                        
+                        // If basket is empty, show empty state
+                        if (data.basket_empty) {
+                            const basketContent = document.getElementById('basket-content');
+                            basketContent.innerHTML = `
+                                <div class="premium-empty-state slide-up" style="grid-column: 1 / -1;">
+                                    <div class="empty-state-content">
+                                        <h2 class="empty-state-title">Your Basket Awaits</h2>
+                                        <p class="empty-state-text">Begin your culinary journey by selecting from our exquisite menu</p>
+                                        <div class="empty-state-divider"></div>
+                                        <a href="{% url 'main:menu' %}" class="premium-browse-btn">Explore Menu</a>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }, 400);
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Make Reservation - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-reservation-section">
+        <div class="premium-container">
+            <!-- Hero Title -->
+            <div class="premium-reservation-hero">
+                <h1 class="premium-title fade-in">Reserve Your Table</h1>
+                <div class="premium-divider"></div>
+                <p class="premium-subtitle">An Evening of Refined Elegance Awaits</p>
+            </div>
+
+            <!-- Reservation Grid -->
+            <div class="premium-reservation-grid slide-up">
+                <!-- Form Container -->
+                <div class="premium-form-wrapper">
+                    <form method="post" class="premium-reservation-form">
+                        {% csrf_token %}
+                        
+                        <!-- Guest Information (if not logged in) -->
+                        {% if not user.is_authenticated %}
+                        <div class="premium-form-section">
+                            <h3 class="premium-form-title">Guest Information</h3>
+                            
+                            <div class="premium-form-group">
+                                <label for="guest_name" class="premium-label">Full Name</label>
+                                <input type="text" id="guest_name" name="guest_name" class="premium-input" required>
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="guest_email" class="premium-label">Email Address</label>
+                                <input type="email" id="guest_email" name="guest_email" class="premium-input" required>
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="guest_phone" class="premium-label">Contact Number</label>
+                                <input type="tel" id="guest_phone" name="guest_phone" class="premium-input" required>
+                            </div>
+                        </div>
+                        
+                        <div class="premium-form-divider"></div>
+                        {% endif %}
+                        
+                        <div class="premium-form-section">
+                            <h3 class="premium-form-title">Reservation Details</h3>
+                            
+                            <div class="premium-form-row">
+                                <div class="premium-form-group">
+                                    <label for="date" class="premium-label">Date</label>
+                                    <input type="date" id="date" name="date" class="premium-input" required min="{{ today }}">
+                                </div>
+                                
+                                <div class="premium-form-group">
+                                    <label for="time" class="premium-label">Time</label>
+                                    <input type="time" id="time" name="time" class="premium-input" required min="11:00" max="22:00">
+                                </div>
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="guests" class="premium-label">Number of Guests</label>
+                                <input type="number" id="guests" name="guests" class="premium-input" required min="1" max="12" value="2">
+                            </div>
+                            
+                            <div class="premium-form-group">
+                                <label for="special_requests" class="premium-label">Special Requests (Optional)</label>
+                                <textarea id="special_requests" name="special_requests" class="premium-textarea" rows="4" placeholder="Dietary requirements, seating preferences, special occasions..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="premium-submit-btn">Confirm Reservation</button>
+                    </form>
+                </div>
+                
+                <!-- Info Sidebar -->
+                <div class="premium-info-sidebar">
+                    <div class="premium-info-card">
+                        <h3 class="premium-card-title">Important Information</h3>
+                        
+                        <div class="premium-info-block">
+                            <h4 class="premium-info-heading">Hours of Service</h4>
+                            <p class="premium-info-detail">Monday – Friday: 11:00 AM – 11:00 PM</p>
+                            <p class="premium-info-detail">Saturday – Sunday: 10:00 AM – 12:00 AM</p>
+                        </div>
+                        
+                        <div class="premium-info-block">
+                            <h4 class="premium-info-heading">Private Events</h4>
+                            <p class="premium-info-detail">For parties exceeding 12 guests, please contact our reservations team directly at +44 123 456 7890</p>
+                        </div>
+                        
+                        <div class="premium-info-block">
+                            <h4 class="premium-info-heading">Contact</h4>
+                            <p class="premium-info-detail">+44 123 456 7890</p>
+                            <p class="premium-info-detail">reservations@restaurant.com</p>
+                        </div>
+                        
+                        <div class="premium-info-block">
+                            <h4 class="premium-info-heading">Policy</h4>
+                            <p class="premium-info-detail">Reservations require a minimum of 2 hours advance notice. Confirmation will be sent via email.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="premium-info-card">
+                        <h3 class="premium-card-title">Your Account</h3>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'main:my_reservations' %}" class="premium-link-btn">View My Reservations</a>
+                        {% else %}
+                        <p class="premium-info-note">Sign in to manage your reservations</p>
+                        <a href="{% url 'main:login' %}" class="premium-link-btn">Sign In</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+// Set minimum date to today
+document.getElementById('date').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

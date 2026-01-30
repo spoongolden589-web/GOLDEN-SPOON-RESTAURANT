@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Orders - Admin - Restaurant{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <div class="container">
+            <h1>Manage Orders</h1>
+            <a href="{% url 'main:admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Filters -->
+        <div class="card">
+            <div class="filters">
+                <a href="{% url 'main:admin_orders' %}" class="filter-btn {% if not selected_status %}active{% endif %}">All</a>
+                {% for status_value, status_label in status_choices %}
+                    <a href="{% url 'main:admin_orders' %}?status={{ status_value }}" 
+                       class="filter-btn {% if selected_status == status_value %}active{% endif %}">
+                        {{ status_label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="card">
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Type</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><strong>{{ order.order_number }}</strong></td>
+                            <td>{{ order.user.username }}<br><small>{{ order.user.email }}</small></td>
+                            <td>{{ order.get_order_type_display }}</td>
+                            <td>{{ order.items.count }} items</td>
+                            <td>£{{ order.total }}</td>
+                            <td><span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                            <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+                            <td>
+                                <a href="{% url 'main:admin_order_detail' order.id %}" class="btn btn-sm btn-primary">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No orders found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

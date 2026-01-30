@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-auth-section">
+        <div class="premium-auth-container">
+            <!-- Auth Card -->
+            <div class="premium-auth-card fade-in">
+                <div class="premium-auth-header">
+                    <h1 class="premium-auth-title">Welcome Back</h1>
+                    <div class="premium-auth-divider"></div>
+                    <p class="premium-auth-subtitle">Access Your Account</p>
+                </div>
+                
+                <form method="post" class="premium-auth-form">
+                    {% csrf_token %}
+                    
+                    <div class="premium-auth-form-group">
+                        <label for="username" class="premium-auth-label">Username</label>
+                        <input type="text" id="username" name="username" class="premium-auth-input" required>
+                    </div>
+                    
+                    <div class="premium-auth-form-group">
+                        <label for="password" class="premium-auth-label">Password</label>
+                        <input type="password" id="password" name="password" class="premium-auth-input" required>
+                    </div>
+                    
+                    <button type="submit" class="premium-auth-submit-btn">Sign In</button>
+                </form>
+                
+                <div class="premium-auth-footer">
+                    <div class="premium-auth-footer-divider"></div>
+                    <p class="premium-auth-footer-text">New to our establishment? <a href="{% url 'main:signup' %}" class="premium-auth-link">Create Account</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

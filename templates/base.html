@@ -1,0 +1,264 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Golden Spoon{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'venob-dark': '#0a0a0a',
+                        'venob-charcoal': '#1a1a1a',
+                        'venob-gold': '#c5a059',
+                        'venob-gold-light': '#d4b16a',
+                        'venob-gold-dark': '#a88844',
+                    },
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'serif'],
+                        'sans': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* Custom Glow Effects */
+        .glow-orange {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 140, 50, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            filter: blur(60px);
+        }
+        
+        .glow-gold {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(197, 160, 89, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            filter: blur(80px);
+        }
+        
+        /* Glassmorphism effect */
+        .glass-card {
+            background: rgba(26, 26, 26, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+        }
+        
+        /* Basket notification badge */
+        .basket-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #c5a059;
+            color: #0a0a0a;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 9999px;
+            min-width: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-venob-dark text-gray-200">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 bg-venob-dark/95 backdrop-blur-md border-b border-venob-gold/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="{% url 'main:home' %}" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-venob-gold rounded-full flex items-center justify-center">
+                        <span class="text-venob-dark text-xl font-bold">G</span>
+                    </div>
+                    <span class="font-serif text-2xl font-bold text-venob-gold tracking-wide">Golden Spoon</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <ul class="hidden lg:flex items-center space-x-8 font-sans text-sm font-medium">
+                    <li><a href="{% url 'main:home' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Home</a></li>
+                    <li><a href="{% url 'main:menu' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Menu</a></li>
+                    <li><a href="{% url 'main:about' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">About</a></li>
+                    <li><a href="{% url 'main:locations' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Locations</a></li>
+                    <li><a href="{% url 'main:make_reservation' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Reservations</a></li>
+                    <li>
+                        <a href="{% url 'main:basket' %}" class="relative text-gray-300 hover:text-venob-gold transition-colors duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            {% if request.session.basket.items %}
+                                <span class="basket-badge">{{ request.session.basket.items|length }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'main:profile' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Profile</a></li>
+                        {% if user.is_staff %}
+                            <li><a href="{% url 'main:admin_dashboard' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Admin</a></li>
+                        {% endif %}
+                        <li><a href="{% url 'main:logout' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'main:login' %}" class="text-gray-300 hover:text-venob-gold transition-colors duration-300">Login / Signup</a></li>
+                    {% endif %}
+                </ul>
+                
+                <!-- Book a Table Button -->
+                <a href="{% url 'main:make_reservation' %}" class="hidden lg:block px-6 py-2.5 bg-venob-gold text-venob-dark font-semibold rounded-lg hover:bg-venob-gold-light transition-all duration-300 shadow-lg hover:shadow-venob-gold/20">
+                    Book a Table
+                </a>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="lg:hidden text-gray-300 hover:text-venob-gold">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-venob-charcoal border-t border-venob-gold/10">
+            <div class="px-4 py-6 space-y-4">
+                <a href="{% url 'main:home' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Home</a>
+                <a href="{% url 'main:menu' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Menu</a>
+                <a href="{% url 'main:about' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">About</a>
+                <a href="{% url 'main:locations' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Locations</a>
+                <a href="{% url 'main:make_reservation' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Reservations</a>
+                <a href="{% url 'main:basket' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Basket</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'main:profile' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Profile</a>
+                    {% if user.is_staff %}
+                        <a href="{% url 'main:admin_dashboard' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Admin</a>
+                    {% endif %}
+                    <a href="{% url 'main:logout' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Logout</a>
+                {% else %}
+                    <a href="{% url 'main:login' %}" class="block text-gray-300 hover:text-venob-gold transition-colors">Login / Signup</a>
+                {% endif %}
+                <a href="{% url 'main:make_reservation' %}" class="block px-6 py-2.5 bg-venob-gold text-venob-dark font-semibold rounded-lg text-center">Book a Table</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="fixed top-24 right-4 z-50 space-y-2">
+            {% for message in messages %}
+                <div class="glass-card px-6 py-4 rounded-lg shadow-xl max-w-md animate-fade-in-down">
+                    <p class="text-sm {% if message.tags == 'error' %}text-red-400{% elif message.tags == 'success' %}text-green-400{% elif message.tags == 'warning' %}text-yellow-400{% else %}text-blue-400{% endif %}">{{ message }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen pt-20">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-venob-charcoal border-t border-venob-gold/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div class="col-span-1">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-venob-gold rounded-full flex items-center justify-center">
+                            <span class="text-venob-dark text-xl font-bold">G</span>
+                        </div>
+                        <span class="font-serif text-xl font-bold text-venob-gold">Golden Spoon</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Experience culinary excellence with every dish.</p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="font-serif text-venob-gold text-lg mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="{% url 'main:home' %}" class="text-gray-400 hover:text-venob-gold transition-colors">Home</a></li>
+                        <li><a href="{% url 'main:menu' %}" class="text-gray-400 hover:text-venob-gold transition-colors">Menu</a></li>
+                        <li><a href="{% url 'main:about' %}" class="text-gray-400 hover:text-venob-gold transition-colors">About</a></li>
+                        <li><a href="{% url 'main:make_reservation' %}" class="text-gray-400 hover:text-venob-gold transition-colors">Reservations</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div>
+                    <h3 class="font-serif text-venob-gold text-lg mb-4">Contact</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>📞 +27 011 11 015</li>
+                        <li>📧 info@goldenspoon.com</li>
+                        <li>📍 Hellenix, Cape Lavendor</li>
+                    </ul>
+                </div>
+                
+                <!-- Hours -->
+                <div>
+                    <h3 class="font-serif text-venob-gold text-lg mb-4">Hours</h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li>Mon - Thu: 11am - 10pm</li>
+                        <li>Fri - Sat: 11am - 11pm</li>
+                        <li>Sunday: 12pm - 9pm</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-venob-gold/10 mt-8 pt-8 text-center">
+                <p class="text-gray-500 text-sm">&copy; {% now "Y" %} Golden Spoon Restaurant. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+        
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.animate-fade-in-down');
+            messages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 5000);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

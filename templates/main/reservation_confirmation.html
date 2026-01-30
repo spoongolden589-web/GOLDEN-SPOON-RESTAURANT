@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservation Confirmed - Restaurant{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+    <div class="container">
+        <div class="confirmation-card">
+            <div class="confirmation-icon">✓</div>
+            <h1>Reservation Confirmed!</h1>
+            <p class="confirmation-message">Your table has been reserved. We look forward to seeing you!</p>
+            
+            <div class="order-details">
+                <h3>Reservation Details</h3>
+                <div class="detail-row">
+                    <span>Reservation Number:</span>
+                    <strong>{{ reservation.reservation_number }}</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Date:</span>
+                    <strong>{{ reservation.date|date:"l, d F Y" }}</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Time:</span>
+                    <strong>{{ reservation.time|time:"H:i" }}</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Guests:</span>
+                    <strong>{{ reservation.guests }} {{ reservation.guests|pluralize:"person,people" }}</strong>
+                </div>
+                <div class="detail-row">
+                    <span>Status:</span>
+                    <span class="badge badge-{{ reservation.status }}">{{ reservation.get_status_display }}</span>
+                </div>
+                
+                {% if reservation.special_requests %}
+                <div class="detail-row">
+                    <span>Special Requests:</span>
+                    <span>{{ reservation.special_requests }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="confirmation-actions">
+                <a href="{% url 'main:home' %}" class="btn btn-primary">Back to Home</a>
+                <a href="{% url 'main:my_reservations' %}" class="btn btn-outline">View My Reservations</a>
+            </div>
+            
+            <p class="confirmation-email">A confirmation email has been sent to {{ reservation.user.email }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

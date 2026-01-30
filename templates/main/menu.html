@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu - Restaurant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-venob-dark">
+    <section class="premium-menu-section">
+        <div class="premium-container">
+            <!-- Hero Title -->
+            <div class="premium-menu-hero">
+                <h1 class="premium-title fade-in">Our Menu</h1>
+                <div class="premium-divider"></div>
+                <p class="premium-subtitle">Curated Excellence for Discerning Palates</p>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="premium-category-filter slide-up">
+                <a href="{% url 'main:menu' %}" class="premium-category-btn {% if not selected_category %}active{% endif %}">All</a>
+                {% for cat_value, cat_label in categories %}
+                    <a href="{% url 'main:menu' %}?category={{ cat_value }}" 
+                       class="premium-category-btn {% if selected_category == cat_value %}active{% endif %}">
+                        {{ cat_label }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            <!-- Menu Items -->
+            {% if items %}
+            <div class="premium-menu-grid slide-up">
+                {% for item in items %}
+                <div class="premium-menu-card">
+                    <div class="premium-menu-card-image">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.name }}" class="menu-image">
+                        {% else %}
+                            <div class="menu-image-placeholder">
+                                <div class="placeholder-icon"></div>
+                            </div>
+                        {% endif %}
+                        <div class="menu-category-badge">{{ item.get_category_display }}</div>
+                    </div>
+                    
+                    <div class="premium-menu-card-body">
+                        <div class="menu-header-row">
+                            <h3 class="menu-item-name">{{ item.name }}</h3>
+                            <span class="menu-item-price-badge">£{{ item.price }}</span>
+                        </div>
+                        
+                        <p class="menu-item-description">{{ item.description|truncatewords:20 }}</p>
+                        
+                        {% if item.allergens %}
+                        <p class="menu-allergen-info">Allergens: {{ item.allergens }}</p>
+                        {% endif %}
+                        
+                        <div class="menu-card-footer">
+                            <div class="menu-card-actions">
+                                <a href="{% url 'main:menu_detail' item.id %}" class="premium-view-btn">Details</a>
+                                <form class="add-to-basket-form" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="premium-add-btn add-to-basket-btn">
+                                        <span class="btn-text">Add to Basket</span>
+                                        <span class="btn-loading" style="display: none;">
+                                            <svg class="spinner" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="30 10"/>
+                                            </svg>
+                                        </span>
+                                        <span class="btn-success" style="display: none;">Added</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="premium-empty-state slide-up">
+                <div class="empty-state-content">
+                    <h2 class="empty-state-title">No Items Available</h2>
+                    <p class="empty-state-text">This category is currently unavailable</p>
+                    <div class="empty-state-divider"></div>
+                    <a href="{% url 'main:menu' %}" class="premium-browse-btn">View All Items</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    
+    // Handle all add to basket forms
+    const forms = document.querySelectorAll('.add-to-basket-form');
+    
+    forms.forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = this.querySelector('.add-to-basket-btn');
+            const btnText = button.querySelector('.btn-text');
+            const btnLoading = button.querySelector('.btn-loading');
+            const btnSuccess = button.querySelector('.btn-success');
+            const itemId = this.dataset.itemId;
+            const itemName = this.dataset.itemName;
+            const quantity = this.querySelector('input[name="quantity"]').value;
+            
+            // Optimistic UI - Show loading immediately
+            button.classList.add('loading');
+            button.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            
+            try {
+                // Send request to server
+                const response = await fetch(`/add-to-basket/${itemId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({
+                        'quantity': quantity
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Success state
+                    button.classList.remove('loading');
+                    button.classList.add('success');
+                    btnLoading.style.display = 'none';
+                    btnSuccess.style.display = 'inline-block';
+                    
+                    // Show toast notification
+                    showToast(`${itemName} added to basket!`, 'success');
+                    
+                    // Update basket count in navbar if exists
+                    updateBasketCount(data.basket_count);
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        button.classList.remove('success');
+                        button.disabled = false;
+                        btnSuccess.style.display = 'none';
+                        btnText.style.display = 'inline-block';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Failed to add item to basket');
+                }
+            } catch (error) {
+                // Error state - revert optimistic update
+                button.classList.remove('loading');
+                button.classList.add('error');
+                btnLoading.style.display = 'none';
+                btnText.style.display = 'inline-block';
+                btnText.textContent = 'Failed';
+                
+                // Show error toast
+                showToast(error.message || 'Failed to add item. Please try again.', 'error');
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    button.classList.remove('error');
+                    button.disabled = false;
+                    btnText.textContent = 'Add to Basket';
+                }, 2000);
+            }
+        });
+    });
+    
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.add('removing');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Update basket count in navbar
+    function updateBasketCount(count) {
+        const basketBadge = document.querySelector('.basket-badge');
+        if (basketBadge) {
+            basketBadge.textContent = count;
+            basketBadge.style.animation = 'successPulse 0.4s ease';
+        } else if (count > 0) {
+            // Create badge if it doesn't exist
+            const basketLink = document.querySelector('a[href*="basket"]');
+            if (basketLink) {
+                const badge = document.createElement('span');
+                badge.className = 'basket-badge';
+                badge.textContent = count;
+                basketLink.style.position = 'relative';
+                basketLink.appendChild(badge);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

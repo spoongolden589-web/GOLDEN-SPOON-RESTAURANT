@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Reservations - Admin - Restaurant{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-header">
+        <div class="container">
+            <h1>Manage Reservations</h1>
+            <a href="{% url 'main:admin_dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Filters -->
+        <div class="card">
+            <div class="filters">
+                <form method="get" class="filter-form">
+                    <input type="date" name="date" value="{{ selected_date }}" placeholder="Filter by date">
+                    <select name="status">
+                        <option value="">All Statuses</option>
+                        {% for status_value, status_label in status_choices %}
+                            <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>
+                                {{ status_label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <a href="{% url 'main:admin_reservations' %}" class="btn btn-outline">Clear</a>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Reservations Table -->
+        <div class="card">
+            {% if reservations %}
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Reservation #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Guests</th>
+                            <th>Special Requests</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in reservations %}
+                        <tr>
+                            <td><strong>{{ res.reservation_number }}</strong></td>
+                            <td>{{ res.user.username }}<br><small>{{ res.user.email }}</small></td>
+                            <td>{{ res.date|date:"d M Y" }}</td>
+                            <td>{{ res.time|time:"H:i" }}</td>
+                            <td>{{ res.guests }}</td>
+                            <td>{{ res.special_requests|truncatewords:5|default:"None" }}</td>
+                            <td><span class="badge badge-{{ res.status }}">{{ res.get_status_display }}</span></td>
+                            <td>
+                                <form method="post" action="{% url 'main:admin_update_reservation_status' res.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <select name="status" onchange="this.form.submit()" class="status-select">
+                                        {% for status_value, status_label in status_choices %}
+                                            <option value="{{ status_value }}" {% if res.status == status_value %}selected{% endif %}>
+                                                {{ status_label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No reservations found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
