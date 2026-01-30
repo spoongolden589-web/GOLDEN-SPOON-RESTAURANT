@@ -75,16 +75,34 @@ WSGI_APPLICATION = 'restaurant_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'restaurant_db',
-        'USER': 'root',
-        'PASSWORD': 'REST1122',  # <--- Put your password inside these quotes
-        'HOST': 'localhost',
-        'PORT': '3306',
+import os
+
+# Check if we're on Vercel (production)
+if os.environ.get('VERCEL'):
+    # For Vercel deployment - use environment variables
+    # You'll need to set up a PostgreSQL database (Railway, Neon, Supabase, etc.)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('PGDATABASE', ''),
+            'USER': os.environ.get('PGUSER', ''),
+            'PASSWORD': os.environ.get('PGPASSWORD', ''),
+            'HOST': os.environ.get('PGHOST', ''),
+            'PORT': os.environ.get('PGPORT', '5432'),
+        }
     }
-}
+else:
+    # Local development - MySQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'restaurant_db',
+            'USER': 'root',
+            'PASSWORD': 'REST1122',  # <--- Put your password inside these quotes
+            'HOST': 'localhost',
+            'PORT': '3306',
+        }
+    }
 
 
 # Password validation
